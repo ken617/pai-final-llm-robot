@@ -4,13 +4,24 @@
 Gazebo 上の差動二輪ロボットがオドメトリを使って自律的に実行します。
 
 ベース: Qiita「ROS2とGazeboの連携によるロボット操作」(N622) — キーボード teleop による操作。
-本課題では teleop を **LLM 計画 + 閉ループ実行** に置き換えました（変更点は `report/report_draft.md` 参照）。
+本課題では teleop を **LLM 計画 + 閉ループ実行** に置き換えました（変更点は下記「ベースからの変更点」参照）。
 
 ```
 自然言語指示 ──> llm_commander ──/robot_plan(JSON)──> plan_executor ──/cmd_vel──> Gazebo(DiffDrive)
  (say CLI)        (LLM API)                            ▲                              │
                                                        └──────────── /odom ───────────┘ (ros_gz_bridge)
 ```
+
+## ベースからの変更点
+| 項目 | ベース記事 | 本リポジトリ |
+|---|---|---|
+| 操作方法 | キーボード (w/a/s/d) → Twist | 自然言語 → LLM → 行動計画 (JSON) → Twist |
+| 制御 | 開ループ | /odom を使った閉ループ P 制御 (goto / move / turn / wait) |
+| ブリッジ | /cmd_vel のみ | /odom, /clock を追加 |
+| ワールド | ロボットと地面 | ランドマーク（赤・青・緑の箱）を配置 |
+| 言語 | C++ (key_event 依存) | Python 1 パッケージ、外部ライブラリ不要 |
+| 環境 | Ubuntu 実機 | Docker + noVNC（Mac/Windows でも可） |
+| 安全 | — | LLM 出力の検証・クリップ、不可能な指示は不動作 |
 
 ## 構成
 ```
@@ -22,7 +33,6 @@ ros2_ws/src/llm_nav/
   llm_nav/llm_commander.py    自然言語 -> LLM -> 行動計画
   llm_nav/plan_executor.py    行動計画 -> P制御 -> /cmd_vel
   llm_nav/say.py              指示を送る CLI
-report/report_draft.md        レポート草案
 ```
 
 ## 動かし方（Mac / Windows / Ubuntu 共通・Docker）
