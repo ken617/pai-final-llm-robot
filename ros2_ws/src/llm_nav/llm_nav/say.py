@@ -19,12 +19,18 @@ def main(args=None):
     rclpy.init(args=args)
     node = Node("say_cli")
     pub = node.create_publisher(String, "/user_command", 10)
-    time.sleep(0.5)  # discovery 待ち
+    # llm_commander (購読側) が見つかるまで待つ。見つかる前に publish すると捨てられる。
+    for _ in range(100):  # 最大 10 秒
+        if pub.get_subscription_count() > 0:
+            break
+        time.sleep(0.1)
+    else:
+        print("警告: /user_command の購読者が見つかりません (sim.launch.py は起動していますか?)")
     msg = String()
     msg.data = text
     pub.publish(msg)
+    time.sleep(0.5)  # 送信完了を待つ
     print(f"sent: {text}")
-    time.sleep(0.3)
     node.destroy_node()
     rclpy.shutdown()
 

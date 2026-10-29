@@ -64,6 +64,14 @@ report/report_draft.md        レポート草案
    ```
    LLM の出力と実行状況はターミナルに流れる（`ros2 topic echo /plan_status` でも確認可）。
 
+## 段階的な動作確認（Docker の前にできること）
+```bash
+cd ros2_ws/src/llm_nav
+python3 tests/test_logic.py      # ① ROS 不要: 計画の解釈・安全クリップ・P制御の収束をシミュレーションで検証
+python3 tests/check_llm.py "赤い箱まで行って、そのあと青い箱へ"   # ② ROS 不要: LLM が正しい JSON 計画を返すか
+```
+③ 上記が通ったら Docker で Gazebo を含む全体を起動（上の「動かし方」）。
+
 ## 動作確認コマンド
 ```bash
 ros2 topic list                 # /cmd_vel /odom /user_command /robot_plan /plan_status
