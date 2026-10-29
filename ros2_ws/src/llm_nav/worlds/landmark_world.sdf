@@ -1,0 +1,176 @@
+<?xml version="1.0" ?>
+<!--
+  差動二輪ロボット + 色付きランドマーク(目標物) のワールド。
+  ベース記事と同様 DiffDrive プラグインで /cmd_vel を受けるが、
+  自律移動のため odom_topic を追加し、ランドマーク(赤・青・緑の箱)を配置している。
+  ランドマーク座標は llm_nav/llm_commander.py の LANDMARKS と一致させること。
+-->
+<sdf version="1.8">
+  <world name="landmark_world">
+    <physics name="1ms" type="ignored">
+      <max_step_size>0.001</max_step_size>
+      <real_time_factor>1.0</real_time_factor>
+    </physics>
+    <plugin filename="libignition-gazebo-physics-system.so" name="ignition::gazebo::systems::Physics"/>
+    <plugin filename="libignition-gazebo-user-commands-system.so" name="ignition::gazebo::systems::UserCommands"/>
+    <plugin filename="libignition-gazebo-scene-broadcaster-system.so" name="ignition::gazebo::systems::SceneBroadcaster"/>
+
+    <light type="directional" name="sun">
+      <cast_shadows>true</cast_shadows>
+      <pose>0 0 10 0 0 0</pose>
+      <diffuse>0.8 0.8 0.8 1</diffuse>
+      <specular>0.2 0.2 0.2 1</specular>
+      <direction>-0.5 0.1 -0.9</direction>
+    </light>
+
+    <model name="ground_plane">
+      <static>true</static>
+      <link name="link">
+        <collision name="collision">
+          <geometry><plane><normal>0 0 1</normal><size>20 20</size></plane></geometry>
+        </collision>
+        <visual name="visual">
+          <geometry><plane><normal>0 0 1</normal><size>20 20</size></plane></geometry>
+          <material><ambient>0.8 0.8 0.8 1</ambient><diffuse>0.8 0.8 0.8 1</diffuse></material>
+        </visual>
+      </link>
+    </model>
+
+    <!-- ===== ランドマーク（LLMに座標を教える目標物） ===== -->
+    <model name="red_box">
+      <static>true</static>
+      <pose>3.0 0.0 0.25 0 0 0</pose>
+      <link name="link">
+        <visual name="visual">
+          <geometry><box><size>0.5 0.5 0.5</size></box></geometry>
+          <material><ambient>1 0 0 1</ambient><diffuse>1 0 0 1</diffuse></material>
+        </visual>
+        <collision name="collision">
+          <geometry><box><size>0.5 0.5 0.5</size></box></geometry>
+        </collision>
+      </link>
+    </model>
+    <model name="blue_box">
+      <static>true</static>
+      <pose>0.0 3.0 0.25 0 0 0</pose>
+      <link name="link">
+        <visual name="visual">
+          <geometry><box><size>0.5 0.5 0.5</size></box></geometry>
+          <material><ambient>0 0 1 1</ambient><diffuse>0 0 1 1</diffuse></material>
+        </visual>
+        <collision name="collision">
+          <geometry><box><size>0.5 0.5 0.5</size></box></geometry>
+        </collision>
+      </link>
+    </model>
+    <model name="green_box">
+      <static>true</static>
+      <pose>-3.0 -2.0 0.25 0 0 0</pose>
+      <link name="link">
+        <visual name="visual">
+          <geometry><box><size>0.5 0.5 0.5</size></box></geometry>
+          <material><ambient>0 1 0 1</ambient><diffuse>0 1 0 1</diffuse></material>
+        </visual>
+        <collision name="collision">
+          <geometry><box><size>0.5 0.5 0.5</size></box></geometry>
+        </collision>
+      </link>
+    </model>
+
+    <!-- ===== 差動二輪ロボット ===== -->
+    <model name="diff_robot" canonical_link="chassis">
+      <pose>0 0 0 0 0 0</pose>
+
+      <link name="chassis">
+        <pose>0 0 0.08 0 0 0</pose>
+        <inertial>
+          <mass>2.0</mass>
+          <inertia><ixx>0.012</ixx><iyy>0.02</iyy><izz>0.028</izz><ixy>0</ixy><ixz>0</ixz><iyz>0</iyz></inertia>
+        </inertial>
+        <visual name="visual">
+          <geometry><box><size>0.30 0.20 0.08</size></box></geometry>
+          <material><ambient>0.1 0.1 0.1 1</ambient><diffuse>0.2 0.2 0.2 1</diffuse></material>
+        </visual>
+        <collision name="collision">
+          <geometry><box><size>0.30 0.20 0.08</size></box></geometry>
+        </collision>
+      </link>
+
+      <link name="wheel_left_link">
+        <pose relative_to="chassis">-0.05 0.12 -0.03 -1.5707 0 0</pose>
+        <inertial>
+          <mass>0.2</mass>
+          <inertia><ixx>0.00015</ixx><iyy>0.00015</iyy><izz>0.00025</izz><ixy>0</ixy><ixz>0</ixz><iyz>0</iyz></inertia>
+        </inertial>
+        <visual name="visual">
+          <geometry><cylinder><radius>0.05</radius><length>0.03</length></cylinder></geometry>
+          <material><ambient>0.9 0.6 0.1 1</ambient><diffuse>0.9 0.6 0.1 1</diffuse></material>
+        </visual>
+        <collision name="collision">
+          <geometry><cylinder><radius>0.05</radius><length>0.03</length></cylinder></geometry>
+        </collision>
+      </link>
+
+      <link name="wheel_right_link">
+        <pose relative_to="chassis">-0.05 -0.12 -0.03 -1.5707 0 0</pose>
+        <inertial>
+          <mass>0.2</mass>
+          <inertia><ixx>0.00015</ixx><iyy>0.00015</iyy><izz>0.00025</izz><ixy>0</ixy><ixz>0</ixz><iyz>0</iyz></inertia>
+        </inertial>
+        <visual name="visual">
+          <geometry><cylinder><radius>0.05</radius><length>0.03</length></cylinder></geometry>
+          <material><ambient>0.9 0.6 0.1 1</ambient><diffuse>0.9 0.6 0.1 1</diffuse></material>
+        </visual>
+        <collision name="collision">
+          <geometry><cylinder><radius>0.05</radius><length>0.03</length></cylinder></geometry>
+        </collision>
+      </link>
+
+      <link name="caster">
+        <pose relative_to="chassis">0.10 0 -0.05 0 0 0</pose>
+        <inertial>
+          <mass>0.1</mass>
+          <inertia><ixx>0.00004</ixx><iyy>0.00004</iyy><izz>0.00004</izz><ixy>0</ixy><ixz>0</ixz><iyz>0</iyz></inertia>
+        </inertial>
+        <visual name="visual">
+          <geometry><sphere><radius>0.03</radius></sphere></geometry>
+        </visual>
+        <collision name="collision">
+          <geometry><sphere><radius>0.03</radius></sphere></geometry>
+        </collision>
+      </link>
+
+      <joint name="wheel_left_joint" type="revolute">
+        <parent>chassis</parent>
+        <child>wheel_left_link</child>
+        <axis><xyz expressed_in="__model__">0 1 0</xyz>
+          <limit><lower>-1.79769e+308</lower><upper>1.79769e+308</upper></limit></axis>
+      </joint>
+      <joint name="wheel_right_joint" type="revolute">
+        <parent>chassis</parent>
+        <child>wheel_right_link</child>
+        <axis><xyz expressed_in="__model__">0 1 0</xyz>
+          <limit><lower>-1.79769e+308</lower><upper>1.79769e+308</upper></limit></axis>
+      </joint>
+      <joint name="caster_joint" type="ball">
+        <parent>chassis</parent>
+        <child>caster</child>
+      </joint>
+
+      <plugin filename="libignition-gazebo-diff-drive-system.so" name="ignition::gazebo::systems::DiffDrive">
+        <left_joint>wheel_left_joint</left_joint>
+        <right_joint>wheel_right_joint</right_joint>
+        <wheel_separation>0.24</wheel_separation>
+        <wheel_radius>0.05</wheel_radius>
+        <topic>/cmd_vel</topic>
+        <!-- 自律移動用に追加: オドメトリ出力 -->
+        <odom_topic>/odom</odom_topic>
+        <odom_publish_frequency>30</odom_publish_frequency>
+        <frame_id>odom</frame_id>
+        <child_frame_id>base_link</child_frame_id>
+        <max_linear_acceleration>1.0</max_linear_acceleration>
+        <max_angular_acceleration>2.0</max_angular_acceleration>
+      </plugin>
+    </model>
+  </world>
+</sdf>

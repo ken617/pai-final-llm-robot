@@ -1,0 +1,21 @@
+services:
+  sim:
+    build:
+      context: .
+    image: pai-final-llm-robot:local
+    shm_size: "1gb"
+    ports:
+      - "127.0.0.1:6080:80"      # ブラウザで http://localhost:6080 を開く
+    volumes:
+      - ../ros2_ws:/home/ubuntu/ros2_ws
+    environment:
+      # LLM 設定。API キーは Mac 側の環境変数 OPENAI_API_KEY_KENGO をそのまま渡す
+      # （docker compose を実行したシェルで export されている必要がある。.zshrc 等で設定済みなら OK）
+      LLM_BASE_URL: ${LLM_BASE_URL:-https://api.openai.com/v1}
+      LLM_MODEL: ${LLM_MODEL:-gpt-4o-mini}
+      LLM_API_KEY: ${OPENAI_API_KEY_KENGO:-}
+      # ローカル LLM (Ollama) に切り替える場合は docker/.env に:
+      #   LLM_BASE_URL=http://host.docker.internal:11434/v1
+      #   LLM_MODEL=qwen2.5:7b
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
