@@ -5,3 +5,4 @@ ros2_ws/log/
 __pycache__/
 *.pyc
 *.mp4
+report/*.pdf
